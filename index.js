@@ -89,6 +89,7 @@ async function run() {
         const document = {
           name: req.body?.name,
           email: req.body?.email,
+          photo: req.body?.photo,
           role: "user",
           status: "active"
         };
@@ -115,8 +116,9 @@ async function run() {
       res.send(result);
     })
     app.get("/users-count", verifyUser, verifyAdmin, async (req, res) => {
-      const totalUsers = (await userCollection.countDocuments()).toString();
-      res.send(totalUsers);
+      const totalUsers = await userCollection.countDocuments();
+      const blockedUsers = await userCollection.countDocuments({status: "disabled"});
+      res.send({totalUsers, blockedUsers});
     });
 
     // Feedback API
@@ -128,6 +130,10 @@ async function run() {
     app.post("/feedbacks", verifyUser, async(req, res) => {
       const result = await feedbackCollection.insertOne(req.body);
       res.send(result);
+    })
+    app.get("/feedbacks-count", verifyUser, verifyAdmin, async(req, res) => {
+      const result = await feedbackCollection.countDocuments();
+      res.send({totalFeedbacks: result});
     })
 
     // Send a ping to confirm a successful connection
