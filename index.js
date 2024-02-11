@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 require('dotenv').config();
@@ -32,6 +32,7 @@ async function run() {
   try {
     const database = client.db('MeetWave');
     const userCollection = database.collection('users');
+    const feedbackCollection = database.collection('feedbacks');
 
     // Middlewares
     const verifyUser = (req, res, next) => {
@@ -113,11 +114,21 @@ async function run() {
       const result = await userCollection.updateOne(filter, document);
       res.send(result);
     })
-    
     app.get("/users-count", verifyUser, verifyAdmin, async (req, res) => {
       const totalUsers = (await userCollection.countDocuments()).toString();
       res.send(totalUsers);
     });
+
+    // Feedback API
+    app.get("/feedbacks", async(req, res) => {
+      // const result = await userCollection.find().skip(req.query?.skip * 10).limit(10).toArray();
+      const result = await feedbackCollection.find().toArray();
+      res.send(result);
+    })
+    app.post("/feedbacks", verifyUser, async(req, res) => {
+      const result = await feedbackCollection.insertOne(req.body);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
