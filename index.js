@@ -90,6 +90,7 @@ async function run() {
           name: req.body?.name,
           email: req.body?.email,
           photo: req.body?.photo,
+          uid: req.body?.uid,
           role: "user",
           status: "active"
         };
@@ -99,6 +100,14 @@ async function run() {
         res.cookie("token", token, config).send(userMatched);
       }
     });
+    app.put('/users', verifyUser, verifyAdmin, async(req, res) => {
+      const filter = {email: req.query?.email};
+      const document = {
+        $set: req.body
+      };
+      const result = await userCollection.updateOne(filter, document);
+      res.send(result);
+    })
     app.get("/logout", verifyUser, (req, res) => {
       res.clearCookie("token").send("Ok");
     });
@@ -107,13 +116,10 @@ async function run() {
       const result = await userCollection.findOne(filter);
       res.send(result);
     });
-    app.put('/user-role', verifyUser, verifyAdmin, async(req, res) => {
-      const filter = {email: req.userEmail};
-      const document = {
-        $set: req.body
-      };
-      const result = await userCollection.updateOne(filter, document);
-      res.send(result);
+    app.get("/user-status", async(req, res) => {
+      const filter = { email: req.query?.email };
+      const result = await userCollection.findOne(filter);
+      res.send({status: result?.status});
     })
     app.get("/users-count", verifyUser, verifyAdmin, async (req, res) => {
       const totalUsers = await userCollection.countDocuments();
