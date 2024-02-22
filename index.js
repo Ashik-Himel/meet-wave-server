@@ -112,6 +112,7 @@ async function run() {
       res.clearCookie("token").send("Ok");
     });
     app.get("/user-role", async (req, res) => {
+      
       const filter = { email: req.query?.email };
       const result = await userCollection.findOne(filter);
       res.send(result);
