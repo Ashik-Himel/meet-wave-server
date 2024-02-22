@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 require('dotenv').config();
 const admin = require('firebase-admin');
-const serviceAccount = require('./path/to/serviceAccountKey.json');
+const serviceAccount = require('./FirebaseServiceKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -117,8 +117,17 @@ async function run() {
     
     // firebase disable
       app.post('/users-disable',verifyUser,verifyAdmin, async(req,res)=>{
+           try{
+            console.log('asi ra frei')
           const {firebaseUID}=req.body
-          console.log(firebaseUID)
+          await admin.auth().updateUser(firebaseUID,{disabled:true})
+          res.status(200).json({message:"User disable successfully"})
+           }
+           catch(error){
+            console.log('agun lagsa ra')
+            res.status(500).json({ error: 'Something went wrong' });
+           }
+
       })
 
     app.get("/logout", verifyUser, (req, res) => {
