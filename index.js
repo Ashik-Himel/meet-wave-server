@@ -129,6 +129,19 @@ async function run() {
            }
 
       })
+      // firebase user enable
+
+      app.post('/users-enable',verifyUser,verifyAdmin, async(req,res)=>{
+        try{
+       const {firebaseUID}=req.body
+       await admin.auth().updateUser(firebaseUID,{disabled: false})
+       res.status(200).json({message:"User disable successfully"})
+        }
+        catch(error){
+         res.status(500).json({ error: 'Something went wrong' });
+        }
+
+   })
 
     app.get("/logout", verifyUser, (req, res) => {
       res.clearCookie("token").send("Ok");
