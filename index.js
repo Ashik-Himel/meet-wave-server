@@ -4,6 +4,12 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 require('dotenv').config();
+const admin = require('firebase-admin');
+const serviceAccount = require('./path/to/serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -108,6 +114,13 @@ async function run() {
       const result = await userCollection.updateOne(filter, document);
       res.send(result);
     })
+    
+    // firebase disable
+      app.post('/users-disable',verifyUser,verifyAdmin, async(req,res)=>{
+          const {firebaseUID}=req.body
+          console.log(firebaseUID)
+      })
+
     app.get("/logout", verifyUser, (req, res) => {
       res.clearCookie("token").send("Ok");
     });
