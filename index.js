@@ -3,6 +3,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
@@ -142,6 +143,42 @@ async function run() {
       res.send({totalFeedbacks: result});
     })
 
+
+
+    // nodeMailer
+
+    app.post('/send-email', async (req, res) => {
+      try {
+          console.log(req.body);
+        const { firstName, lastName, email, phone, text } = req.body;
+    
+        const transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        });
+    
+        const info = await transporter.sendMail({
+          from: email,
+          to: "tusharimran470@gmail.com",
+          subject: "Contact Form Submission",
+          text: `Name: ${firstName} ${lastName}\nEmail: ${email}\nPhone: ${phone}\nMessage: ${text}`,
+        });
+    
+        console.log("Message sent: %s", info.messageId);
+        res.json({ message: "Email sent successfully" });
+      } catch (error) {
+        console.error("Error sending email:", error);
+        res.status(500).json({ error: "Failed to send email" });
+      }
+    });
+
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("MongoDB Connected!!!");
@@ -150,6 +187,7 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
 
 app.get('/', (req, res) => {
   res.send("Welcome to MeetWave's server!");
