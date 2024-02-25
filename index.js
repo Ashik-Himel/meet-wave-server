@@ -115,35 +115,6 @@ async function run() {
       const result = await userCollection.updateOne(filter, document);
       res.send(result);
     })
-    
-    // firebase disable
-      app.post('/users-disable',verifyUser,verifyAdmin, async(req,res)=>{
-           try{
-            console.log('asi ra frei')
-          const {firebaseUID}=req.body
-          await admin.auth().updateUser(firebaseUID,{disabled:true})
-          res.status(200).json({message:"User disable successfully"})
-           }
-           catch(error){
-            console.log('agun lagsa ra')
-            res.status(500).json({ error: 'Something went wrong' });
-           }
-
-      })
-      // firebase user enable
-
-      app.post('/users-enable',verifyUser,verifyAdmin, async(req,res)=>{
-        try{
-       const {firebaseUID}=req.body
-       await admin.auth().updateUser(firebaseUID,{disabled: false})
-       res.status(200).json({message:"User disable successfully"})
-        }
-        catch(error){
-         res.status(500).json({ error: 'Something went wrong' });
-        }
-
-   })
-
     app.get("/logout", verifyUser, (req, res) => {
       res.clearCookie("token").send("Ok");
     });
@@ -163,6 +134,33 @@ async function run() {
       const blockedUsers = await userCollection.countDocuments({status: "disabled"});
       res.send({totalUsers, blockedUsers});
     });
+    
+    // firebase disable
+      app.post('/users-disable',verifyUser,verifyAdmin, async(req,res)=>{
+           try{
+            console.log('asi ra frei')
+          const {firebaseUID}=req.body
+          await admin.auth().updateUser(firebaseUID,{disabled:true})
+          res.status(200).json({message:"User disable successfully"})
+           }
+           catch(error){
+            console.log('agun lagsa ra')
+            res.status(500).json({ error: 'Something went wrong' });
+           }
+
+      })
+      // firebase user enable
+      app.post('/users-enable',verifyUser,verifyAdmin, async(req,res)=>{
+        try{
+       const {firebaseUID}=req.body
+       await admin.auth().updateUser(firebaseUID,{disabled: false})
+       res.status(200).json({message:"User disable successfully"})
+        }
+        catch(error){
+         res.status(500).json({ error: 'Something went wrong' });
+        }
+
+   })
 
     // Feedback API
     app.get("/feedbacks", async(req, res) => {
@@ -179,10 +177,7 @@ async function run() {
       res.send({totalFeedbacks: result});
     })
 
-
-
     // nodeMailer
-
     app.post('/send-email', async (req, res) => {
       try {
           console.log(req.body);
@@ -212,8 +207,6 @@ async function run() {
         res.status(500).json({ error: "Failed to send email" });
       }
     });
-
-
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
