@@ -5,6 +5,12 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const admin = require('firebase-admin');
+const serviceAccount = require('./FirebaseServiceKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -109,10 +115,40 @@ async function run() {
       const result = await userCollection.updateOne(filter, document);
       res.send(result);
     })
+    
+    // firebase disable
+      app.post('/users-disable',verifyUser,verifyAdmin, async(req,res)=>{
+           try{
+            console.log('asi ra frei')
+          const {firebaseUID}=req.body
+          await admin.auth().updateUser(firebaseUID,{disabled:true})
+          res.status(200).json({message:"User disable successfully"})
+           }
+           catch(error){
+            console.log('agun lagsa ra')
+            res.status(500).json({ error: 'Something went wrong' });
+           }
+
+      })
+      // firebase user enable
+
+      app.post('/users-enable',verifyUser,verifyAdmin, async(req,res)=>{
+        try{
+       const {firebaseUID}=req.body
+       await admin.auth().updateUser(firebaseUID,{disabled: false})
+       res.status(200).json({message:"User disable successfully"})
+        }
+        catch(error){
+         res.status(500).json({ error: 'Something went wrong' });
+        }
+
+   })
+
     app.get("/logout", verifyUser, (req, res) => {
       res.clearCookie("token").send("Ok");
     });
     app.get("/user-role", async (req, res) => {
+      
       const filter = { email: req.query?.email };
       const result = await userCollection.findOne(filter);
       res.send(result);
